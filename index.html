@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>送给特别的你</title>
+    <style>
+        /* 页面基础样式 */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000; /* 背景颜色，喜欢粉色可以改成 #ffc0cb */
+        }
+
+        /* 画布样式 */
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* 中间文字样式 */
+        .center-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            color: #fff;
+            font-family: "Microsoft YaHei", sans-serif;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            text-shadow: 0 0 10px #ff69b4;
+            pointer-events: none; /* 让点击穿透文字，不影响背景互动 */
+            animation: breathe 2s infinite ease-in-out;
+        }
+
+        /* 文字呼吸动画 */
+        @keyframes breathe {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+            50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="center-text">
+        <p>点开全是爱你的形状 💖</p>
+        <p style="font-size: 16px; margin-top: 10px;">(点击屏幕会有更多爱心哦)</p>
+    </div>
+
+    <canvas id="heartCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('heartCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let width, height;
+        let hearts = [];
+
+        // 初始化画布大小
+        function init() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+        }
+
+        // 监听窗口大小变化
+        window.addEventListener('resize', init);
+        init();
+
+        // 随机数生成
+        function random(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        // 爱心类
+        class Heart {
+            constructor(x, y) {
+                this.x = x || random(0, width);
+                this.y = y || height + random(0, 100);
+                this.velY = random(-2, -0.5); // 上升速度
+                this.velX = random(-1, 1);    // 左右飘动速度
+                this.size = random(5, 15);    // 爱心大小
+                this.alpha = 1;               // 透明度
+                this.color = `hsl(${random(300, 360)}, 70%, 60%)`; // 颜色范围：粉色到红色
+            }
+
+            draw() {
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                // 绘制爱心形状的数学公式
+                let topCurveHeight = this.size * 0.3;
+                ctx.moveTo(this.x, this.y + topCurveHeight);
+                // 左半边
+                ctx.bezierCurveTo(
+                    this.x - this.size / 2, this.y - this.size / 2, 
+                    this.x - this.size, this.y + this.size / 3, 
+                    this.x, this.y + this.size
+                );
+                // 右半边
+                ctx.bezierCurveTo(
+                    this.x + this.size, this.y + this.size / 3, 
+                    this.x + this.size / 2, this.y - this.size / 2, 
+                    this.x, this.y + topCurveHeight
+                );
+                ctx.closePath();
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+
+            update() {
+                this.x += this.velX;
+                this.y += this.velY;
+                this.alpha -= 0.005; // 慢慢消失
+
+                // 简单的左右摇摆效果
+                this.x += Math.sin(this.y * 0.05) * 0.5;
+
+                // 如果完全透明，重置
+                if (this.alpha <= 0) {
+                    this.reset();
+                }
+            }
+
+            reset() {
+                this.x = random(0, width);
+                this.y = height + random(0, 100);
+                this.velY = random(-2, -0.5);
+                this.velX = random(-1, 1);
+                this.alpha = 1;
+            }
+        }
+
+        // 初始化一定数量的爱心
+        for (let i = 0; i < 100; i++) {
+            hearts.push(new Heart());
+        }
+
+        // 动画循环
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            hearts.forEach(heart => {
+                heart.draw();
+                heart.update();
+            });
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        // 交互：点击屏幕添加爱心
+        window.addEventListener('click', (e) => {
+            for(let i=0; i<10; i++) {
+                let heart = new Heart(e.clientX, e.clientY);
+                heart.velY = random(-3, -1); // 点击产生的爱心上升快一点
+                hearts.push(heart);
+            }
+        });
+
+        // 兼容移动端触摸
+        window.addEventListener('touchstart', (e) => {
+            for(let i=0; i<10; i++) {
+                let heart = new Heart(e.touches[0].clientX, e.touches[0].clientY);
+                heart.velY = random(-3, -1);
+                hearts.push(heart);
+            }
+        });
+
+    </script>
+</body>
+</html>
