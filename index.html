@@ -3,176 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>送给特别的你</title>
+    <title>To: 白佳学妹</title>
     <style>
-        /* 页面基础样式 */
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
+        /* --- 基础设置 --- */
+        body {
+            margin: 0; padding: 0;
+            width: 100%; height: 100vh;
             overflow: hidden;
-            background-color: #000; /* 背景颜色，喜欢粉色可以改成 #ffc0cb */
+            background-color: #000; /* 黑色背景，与图片边缘融合 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: "Microsoft YaHei", sans-serif;
         }
 
-        /* 画布样式 */
+        /* --- 背景图片层 (圣诞树) --- */
+        #tree-bg {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            
+            /* 图片显示方式：保持比例，覆盖屏幕 */
+            background-image: url('./tree.jpg'); 
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-size: cover; /* 铺满全屏 */
+            
+            /* 加一点微弱的呼吸动画，让图片看起来也是“活”的 */
+            animation: breatheImg 4s infinite ease-in-out;
+        }
+
+        /* 如果图片主体被截断，可以用 contain 模式，但会有黑边。
+           目前用 cover 更有沉浸感 */
+
+        @keyframes breatheImg {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); } /* 微微放大 */
+            100% { transform: scale(1); }
+        }
+
+        /* --- 爱心画布层 --- */
         canvas {
             position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 2; /* 在图片上面 */
+            pointer-events: none; 
         }
 
-        /* 中间文字样式 */
-        .center-text {
+        /* --- 文字容器 (保留之前的上下布局) --- */
+        .text-container {
             position: absolute;
-            top: 50%;
+            z-index: 3; 
+            bottom: 8%; /* 距离底部的位置 */
             left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 2;
-            color: #fff;
-            font-family: "Microsoft YaHei", sans-serif;
-            font-size: 24px;
-            font-weight: bold;
-            text-align: center;
-            text-shadow: 0 0 10px #ff69b4;
-            pointer-events: none; /* 让点击穿透文字，不影响背景互动 */
-            animation: breathe 2s infinite ease-in-out;
+            transform: translateX(-50%);
+            width: 82%; 
+            padding: 20px;
+            
+            /* 磨砂玻璃质感 */
+            background: rgba(0, 0, 0, 0.5); 
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            
+            color: #ffeeb0; /* 米金色文字 */
+            text-align: justify;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+            pointer-events: none;
         }
 
-        /* 文字呼吸动画 */
-        @keyframes breathe {
-            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
-            50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+        .title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff; /* 亮白色标题 */
+            margin-bottom: 12px;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .content {
+            font-size: 14px;
+            line-height: 1.7;
+            opacity: 0;
+            animation: fadeInText 3s ease-in forwards 0.5s;
+        }
+
+        @keyframes fadeInText {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
 
-    <div class="center-text">
-        <p>点开全是爱你的形状 💖</p>
-        <p style="font-size: 16px; margin-top: 10px;">(点击屏幕会有更多爱心哦)</p>
-    </div>
-
+    <div id="tree-bg"></div>
+    
     <canvas id="heartCanvas"></canvas>
 
+    <div class="text-container">
+        <div class="title">亲爱的白佳学妹：</div>
+        <div class="content">
+            我嘴笨，不太会说那些甜言蜜语的哄人话，但我心里装满了想对你好的念头。我可能给不了太华丽的承诺，却会把你放在心尖上，用实实在在的行动，护着你、陪着你。<br><br>
+            我多希望我们能牵着彼此的手，互相扶持，一起走过岁岁年年，从晨光微熹走到暮色沉沉，把这条路，走得又远又长。
+        </div>
+    </div>
+
     <script>
+        // --- 满屏爱心动画逻辑 (无需修改) ---
         const canvas = document.getElementById('heartCanvas');
         const ctx = canvas.getContext('2d');
-        
         let width, height;
         let hearts = [];
 
-        // 初始化画布大小
-        function init() {
+        function resize() {
             width = window.innerWidth;
             height = window.innerHeight;
             canvas.width = width;
             canvas.height = height;
         }
+        window.addEventListener('resize', resize);
+        resize();
 
-        // 监听窗口大小变化
-        window.addEventListener('resize', init);
-        init();
-
-        // 随机数生成
-        function random(min, max) {
-            return Math.random() * (max - min) + min;
-        }
-
-        // 爱心类
         class Heart {
-            constructor(x, y) {
-                this.x = x || random(0, width);
-                this.y = y || height + random(0, 100);
-                this.velY = random(-2, -0.5); // 上升速度
-                this.velX = random(-1, 1);    // 左右飘动速度
-                this.size = random(5, 15);    // 爱心大小
-                this.alpha = 1;               // 透明度
-                this.color = `hsl(${random(300, 360)}, 70%, 60%)`; // 颜色范围：粉色到红色
+            constructor() {
+                this.reset(true);
             }
 
-            draw() {
-                ctx.globalAlpha = this.alpha;
-                ctx.fillStyle = this.color;
-                ctx.beginPath();
-                // 绘制爱心形状的数学公式
-                let topCurveHeight = this.size * 0.3;
-                ctx.moveTo(this.x, this.y + topCurveHeight);
-                // 左半边
-                ctx.bezierCurveTo(
-                    this.x - this.size / 2, this.y - this.size / 2, 
-                    this.x - this.size, this.y + this.size / 3, 
-                    this.x, this.y + this.size
-                );
-                // 右半边
-                ctx.bezierCurveTo(
-                    this.x + this.size, this.y + this.size / 3, 
-                    this.x + this.size / 2, this.y - this.size / 2, 
-                    this.x, this.y + topCurveHeight
-                );
-                ctx.closePath();
-                ctx.fill();
-                ctx.globalAlpha = 1;
+            reset(initial = false) {
+                this.x = Math.random() * width;
+                this.y = initial ? Math.random() * height : height + 20;
+                this.size = Math.random() * 10 + 5;
+                this.speed = Math.random() * 1.5 + 0.5;
+                // 调整爱心颜色：为了配合蓝色背景，加入一点点蓝紫色调，但主体还是粉色
+                // 偶尔出现淡蓝色爱心呼应背景
+                if(Math.random() > 0.8) {
+                     this.color = `hsla(200, 80%, 70%, ${Math.random() * 0.4 + 0.3})`; // 浅蓝
+                } else {
+                     this.color = `hsla(${Math.random() * 40 + 330}, 90%, 70%, ${Math.random() * 0.4 + 0.3})`; // 粉红
+                }
+                this.velX = Math.random() * 1 - 0.5;
             }
 
             update() {
-                this.x += this.velX;
-                this.y += this.velY;
-                this.alpha -= 0.005; // 慢慢消失
-
-                // 简单的左右摇摆效果
-                this.x += Math.sin(this.y * 0.05) * 0.5;
-
-                // 如果完全透明，重置
-                if (this.alpha <= 0) {
-                    this.reset();
+                this.y -= this.speed;
+                this.x += this.velX + Math.sin(this.y * 0.01) * 0.3;
+                if (this.y < -50) {
+                    this.reset(false);
                 }
             }
 
-            reset() {
-                this.x = random(0, width);
-                this.y = height + random(0, 100);
-                this.velY = random(-2, -0.5);
-                this.velX = random(-1, 1);
-                this.alpha = 1;
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                let t = this.size; 
+                let x = this.x; 
+                let y = this.y;
+                ctx.moveTo(x, y + t * 0.3);
+                ctx.bezierCurveTo(x - t / 2, y - t / 2, x - t, y + t / 3, x, y + t);
+                ctx.bezierCurveTo(x + t, y + t / 3, x + t / 2, y - t / 2, x, y + t * 0.3);
+                ctx.fill();
             }
         }
 
-        // 初始化一定数量的爱心
-        for (let i = 0; i < 100; i++) {
-            hearts.push(new Heart());
+        function initHearts() {
+            const count = width < 500 ? 60 : 120; 
+            for (let i = 0; i < count; i++) {
+                hearts.push(new Heart());
+            }
         }
 
-        // 动画循环
         function animate() {
             ctx.clearRect(0, 0, width, height);
             hearts.forEach(heart => {
-                heart.draw();
                 heart.update();
+                heart.draw();
             });
             requestAnimationFrame(animate);
         }
 
+        initHearts();
         animate();
-
-        // 交互：点击屏幕添加爱心
-        window.addEventListener('click', (e) => {
-            for(let i=0; i<10; i++) {
-                let heart = new Heart(e.clientX, e.clientY);
-                heart.velY = random(-3, -1); // 点击产生的爱心上升快一点
-                hearts.push(heart);
-            }
-        });
-
-        // 兼容移动端触摸
-        window.addEventListener('touchstart', (e) => {
-            for(let i=0; i<10; i++) {
-                let heart = new Heart(e.touches[0].clientX, e.touches[0].clientY);
-                heart.velY = random(-3, -1);
-                hearts.push(heart);
-            }
-        });
 
     </script>
 </body>
